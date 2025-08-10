@@ -1,3 +1,5 @@
+import { calculateLotAndUnits, UNITS_PER_LOT } from './lotCalculator'
+
 export interface CalculationInput {
   accountBalance: number
   riskPercent: number
@@ -20,7 +22,7 @@ export interface CalculationResult {
   tp2: number
 }
 
-const STANDARD_LOT = 100000
+const STANDARD_LOT = UNITS_PER_LOT
 
 function getPipSize(currencyPair: string): number {
   return currencyPair.includes('JPY') ? 0.01 : 0.0001
@@ -49,9 +51,9 @@ function calculateRecommendedLot(
   allowableLoss: number,
   pipValueJPY: number,
   stopLossPips: number
-): number {
-  const rawLot = allowableLoss / (pipValueJPY * stopLossPips)
-  return Math.floor(rawLot * 100) / 100
+): { recommendedLot: number; units: number } {
+  const { lotsRounded, units } = calculateLotAndUnits(allowableLoss, pipValueJPY, stopLossPips)
+  return { recommendedLot: lotsRounded, units }
 }
 
 function calculateRequiredMargin(
@@ -115,9 +117,7 @@ export function calculate(input: CalculationInput): CalculationResult {
   
   const pipValueJPY = calculatePipValue(currencyPair, entryPrice, conversionRate)
   
-  const recommendedLot = calculateRecommendedLot(allowableLoss, pipValueJPY, stopLossPips)
-  
-  const units = recommendedLot * STANDARD_LOT
+  const { recommendedLot, units } = calculateRecommendedLot(allowableLoss, pipValueJPY, stopLossPips)
   
   const requiredMargin = calculateRequiredMargin(
     currencyPair,

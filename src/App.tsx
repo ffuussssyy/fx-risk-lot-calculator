@@ -261,6 +261,9 @@ function App() {
         {results && (
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <h2 className="text-lg font-semibold text-gray-800 mb-3">計算結果</h2>
+            <div className="mb-2 text-xs text-gray-600 italic">
+              ロットは 0.01 lot刻み・切り下げで計算しています。
+            </div>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>許容損失額:</span>
