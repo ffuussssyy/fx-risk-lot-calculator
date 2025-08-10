@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { calculate, type CalculationResult } from './utils/calculator'
 import { saveToURL, loadFromURL, shareURL } from './utils/urlState'
+import { quoteCcy } from './utils/notionalCalculator'
 
 function App() {
   const [accountBalance, setAccountBalance] = useState<string>('')
@@ -21,6 +22,9 @@ function App() {
     'EURUSD', 'GBPUSD', 'AUDUSD', 'USDCAD', 'USDCHF',
     'EURGBP', 'EURAUD', 'EURCHF', 'GBPAUD', 'GBPCHF'
   ]
+
+  const currentQuoteCcy = quoteCcy(currencyPair)
+  const needsConversion = currentQuoteCcy !== 'JPY'
 
   useEffect(() => {
     const urlParams = loadFromURL()
@@ -74,8 +78,8 @@ function App() {
       if (isNaN(lev) || lev <= 0) {
         throw new Error('レバレッジを正しく入力してください')
       }
-      if (!currencyPair.endsWith('JPY') && (!conversion || isNaN(conversion) || conversion <= 0)) {
-        throw new Error('JPY変換レートを正しく入力してください')
+      if (needsConversion && (!conversion || isNaN(conversion) || conversion <= 0)) {
+        throw new Error(`${currentQuoteCcy}/JPY換算レートを正しく入力してください`)
       }
       
       const result = calculate({
@@ -200,10 +204,10 @@ function App() {
             </select>
           </div>
 
-          {!currencyPair.endsWith('JPY') && (
+          {needsConversion && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                JPY変換レート ({currencyPair.slice(-3)}/JPY)
+                換算レート ({currentQuoteCcy}/JPY)
               </label>
               <input
                 type="number"

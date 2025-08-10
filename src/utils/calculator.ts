@@ -1,4 +1,5 @@
 import { calculateLotAndUnits, UNITS_PER_LOT } from './lotCalculator'
+import { calculateMarginJPY } from './notionalCalculator'
 
 export interface CalculationInput {
   accountBalance: number
@@ -64,25 +65,7 @@ function calculateRequiredMargin(
   conversionRate?: number
 ): number {
   const units = lots * STANDARD_LOT
-  let notionalValueJPY: number
-  
-  if (currencyPair.startsWith('JPY')) {
-    notionalValueJPY = units / entryPrice
-  } else if (currencyPair.endsWith('JPY')) {
-    notionalValueJPY = units * entryPrice
-  } else {
-    if (!conversionRate) {
-      throw new Error('Conversion rate is required for non-JPY pairs')
-    }
-    const baseCurrency = currencyPair.slice(0, 3)
-    if (baseCurrency === 'USD' || baseCurrency === 'EUR' || baseCurrency === 'GBP') {
-      notionalValueJPY = units * conversionRate
-    } else {
-      notionalValueJPY = units * entryPrice * conversionRate
-    }
-  }
-  
-  return notionalValueJPY / leverage
+  return calculateMarginJPY(currencyPair, units, entryPrice, leverage, conversionRate)
 }
 
 function calculateTakeProfitPrices(

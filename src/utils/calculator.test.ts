@@ -52,7 +52,7 @@ describe('FX Risk Calculator', () => {
     
     expect(result.units).toBeCloseTo(88000, 100)
     
-    expect(result.requiredMargin).toBeCloseTo(528000, -3)
+    expect(result.requiredMargin).toBeCloseTo(580800, -2)
     
     expect(result.tp1).toBeCloseTo(1.1015, 0.0001)
     expect(result.tp15).toBeCloseTo(1.1022, 0.0001)
