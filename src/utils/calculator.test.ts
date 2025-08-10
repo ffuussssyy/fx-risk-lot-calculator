@@ -120,4 +120,43 @@ describe('FX Risk Calculator', () => {
       })
     }).toThrow('Conversion rate is required for non-JPY pairs')
   })
+
+  it('should calculate example 1 correctly (USDJPY, 1M balance, 1% risk, 30 pips)', () => {
+    const input = {
+      accountBalance: 1000000,
+      riskPercent: 1,
+      currencyPair: 'USDJPY',
+      entryPrice: 150.00,
+      stopLossPips: 30,
+      leverage: 25,
+      isShort: false
+    }
+    
+    const result = calculate(input)
+    
+    expect(result.allowableLoss).toBe(10000)
+    expect(result.recommendedLot).toBeCloseTo(0.33, 1)
+    expect(result.requiredMargin).toBeCloseTo(198000, -3)
+    expect(result.pipValue).toBeCloseTo(1000, 0)
+  })
+
+  it('should calculate example 2 correctly (EURUSD, 1M balance, 1% risk, 30 pips)', () => {
+    const input = {
+      accountBalance: 1000000,
+      riskPercent: 1,
+      currencyPair: 'EURUSD',
+      entryPrice: 1.1,
+      stopLossPips: 30,
+      leverage: 25,
+      conversionRate: 150,
+      isShort: false
+    }
+    
+    const result = calculate(input)
+    
+    expect(result.allowableLoss).toBe(10000)
+    expect(result.recommendedLot).toBeCloseTo(0.22, 1)
+    expect(result.requiredMargin).toBeCloseTo(145200, -3)
+    expect(result.pipValue).toBeCloseTo(1500, 0)
+  })
 })

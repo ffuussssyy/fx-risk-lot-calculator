@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { calculate, type CalculationResult } from './utils/calculator'
 import { saveToURL, loadFromURL, shareURL } from './utils/urlState'
 import { quoteCcy } from './utils/notionalCalculator'
+import { formatPrice, formatCurrency, formatLot } from './utils/formatters'
 
 function App() {
   const [accountBalance, setAccountBalance] = useState<string>('')
@@ -108,6 +109,30 @@ function App() {
     } catch (err) {
       console.error('Failed to copy URL:', err)
     }
+  }
+
+  const setExample1 = () => {
+    setAccountBalance('1000000')
+    setRiskPercent('1')
+    setCurrencyPair('USDJPY')
+    setEntryPrice('150')
+    setStopLossPips('30')
+    setLeverage('25')
+    setConversionRate('')
+    setIsShort(false)
+    setTimeout(() => handleCalculate(), 100)
+  }
+
+  const setExample2 = () => {
+    setAccountBalance('1000000')
+    setRiskPercent('1')
+    setCurrencyPair('EURUSD')
+    setEntryPrice('1.1')
+    setStopLossPips('30')
+    setLeverage('25')
+    setConversionRate('150')
+    setIsShort(false)
+    setTimeout(() => handleCalculate(), 100)
   }
 
   return (
@@ -248,6 +273,21 @@ function App() {
               共有
             </button>
           </div>
+          
+          <div className="mt-3 flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={setExample1}
+              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              例①をセット
+            </button>
+            <button
+              onClick={setExample2}
+              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              例②をセット
+            </button>
+          </div>
         </div>
 
         {showShareMessage && (
@@ -263,19 +303,26 @@ function App() {
         )}
 
         {results && (
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <div className={`mt-6 p-4 rounded-lg ${results.recommendedLot === 0 ? 'bg-gray-200 text-gray-500' : 'bg-gray-50'}`}>
             <h2 className="text-lg font-semibold text-gray-800 mb-3">計算結果</h2>
             <div className="mb-2 text-xs text-gray-600 italic">
               ロットは 0.01 lot刻み・切り下げで計算しています。
             </div>
+            
+            {results.recommendedLot === 0 && (
+              <div className="mb-3 p-2 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded text-sm">
+                ⚠️ 口座残高・リスク・損切を見直してください
+              </div>
+            )}
+            
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>許容損失額:</span>
-                <span className="font-medium">¥{results.allowableLoss.toLocaleString()}</span>
+                <span className="font-medium">{formatCurrency(results.allowableLoss)}</span>
               </div>
               <div className="flex justify-between">
                 <span>推奨ロット:</span>
-                <span className="font-medium">{results.recommendedLot.toFixed(2)}</span>
+                <span className="font-medium">{formatLot(results.recommendedLot)}</span>
               </div>
               <div className="flex justify-between">
                 <span>ユニット数:</span>
@@ -283,31 +330,35 @@ function App() {
               </div>
               <div className="flex justify-between">
                 <span>1pip価値:</span>
-                <span className="font-medium">¥{results.pipValue.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrency(results.pipValue)}</span>
               </div>
               <div className="flex justify-between">
                 <span>必要証拠金:</span>
-                <span className="font-medium">¥{results.requiredMargin.toLocaleString()}</span>
+                <span className="font-medium">{formatCurrency(results.requiredMargin)}</span>
               </div>
               <div className="border-t pt-2 mt-3">
                 <div className="text-xs text-gray-600 mb-1">利確価格 (R:R)</div>
                 <div className="flex justify-between text-xs">
                   <span>1.0:</span>
-                  <span>{results.tp1.toFixed(3)}</span>
+                  <span>{formatPrice(currencyPair, results.tp1)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span>1.5:</span>
-                  <span>{results.tp15.toFixed(3)}</span>
+                  <span>{formatPrice(currencyPair, results.tp15)}</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span>2.0:</span>
-                  <span>{results.tp2.toFixed(3)}</span>
+                  <span>{formatPrice(currencyPair, results.tp2)}</span>
                 </div>
               </div>
             </div>
           </div>
         )}
       </div>
+      
+      <footer className="mt-8 text-center text-xs text-gray-500 px-4">
+        教育目的の試算です。実取引条件は各社仕様に依存します。
+      </footer>
     </div>
   )
 }
